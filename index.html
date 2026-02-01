@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IR Playbook Manager - Professional Incident Response Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%);
+            color: #e4e4e4;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #2d2d30;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            color: #0078d4;
+            font-weight: 600;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header .stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+        }
+
+        .critical { color: #ff4444; }
+        .warning { color: #ff9900; }
+        .success { color: #00aa44; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #106ebe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,120,212,0.3);
+        }
+
+        .btn.critical { background: #ff4444; }
+        .btn.critical:hover { background: #e63939; }
+
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid #606060;
+            color: #e4e4e4;
+        }
+
+        .btn.secondary:hover {
+            background: #404040;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            background: #404040;
+            color: #e4e4e4;
+            border: 1px solid #606060;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .incidents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .incident-card {
+            background: #2d2d30;
+            border: 1px solid #404040;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .incident-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border-color: #0078d4;
+        }
+
+        .incident-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .incident-id {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #0078d4;
+        }
+
+        .severity-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .severity-critical {
+            background: rgba(255,68,68,0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
+        .severity-high {
+            background: rgba(255,153,0,0.2);
+            color: #ff9900;
+            border: 1px solid #ff9900;
+        }
+
+        .severity-medium {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .severity-low {
+            background: rgba(0,170,68,0.2);
+            color: #00aa44;
+            border: 1px solid #00aa44;
+        }
+
+        .incident-type {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #b0b0b0;
+        }
+
+        .incident-description {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .incident-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #808080;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #404040;
+            border-radius: 2px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0078d4, #00aa44);
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: #2d2d30;
+            margin: 2rem auto;
+            width: 95%;
+            max-width: 900px;
+            border-radius: 12px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #3d3d40;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #b0b0b0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            background: #404040;
+            border-bottom: 1px solid #505050;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: #b0b0b0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            flex: 1;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #0078d4;
+            border-bottom-color: #0078d4;
+            background: #2d2d30;
+        }
+
+        .tab-content {
+            padding: 2rem;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #e4e4e4;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: #404040;
+            color: #e4e4e4;
+            border: 1px solid #606060;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0,120,212,0.2);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .playbook-step {
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .playbook-step.completed {
+            border-color: #00aa44;
+            background: rgba(0,170,68,0.05);
+        }
+
+        .step-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: #2d2d30;
+        }
+
+        .step-title {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .step-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #606060;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .step-checkbox.checked {
+            background: #00aa44;
+            border-color: #00aa44;
+        }
+
+        .step-checkbox.checked::after {
+            content: '\2713';
+            position: absolute;
+            top: -2px;
+            left: 3px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step-content {
+            padding: 0 1.5rem 1.5rem;
+            display: none;
+            color: #b0b0b0;
+            line-height: 1.5;
+        }
+
+        .step-content.show {
+            display: block;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #1a1a1a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0078d4;
+        }
+
+        .sla-warning {
+            color: #ff9900;
+        }
+
+        .sla-critical {
+            color: #ff4444;
+        }
+
+        .no-incidents {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #808080;
+        }
+
+        .no-incidents i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #404040;
+        }
+
+        .timeline-entry {
+            background: #1a1a1a;
+            border-left: 3px solid #0078d4;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .timeline-timestamp {
+            font-size: 0.8rem;
+            color: #808080;
+            font-weight: 500;
+        }
+
+        .evidence-item {
+            background: #1a1a1a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #404040;
+        }
+
+        .evidence-name {
+            font-weight: 500;
+            color: #0078d4;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .incidents-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .actions-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .filters {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+
+        .export-section {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border: 1px solid #404040;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .incident-card {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1><i class="fas fa-shield-alt"></i> IR Playbook Manager</h1>
+        <div class="stats">
+            <div class="stat-item">
+                <i class="fas fa-exclamation-triangle critical"></i>
+                <span>Critical: <span id="critical-count">0</span></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-clock warning"></i>
+                <span>Active: <span id="active-count">0</span></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-check-circle success"></i>
+                <span>Resolved Today: <span id="resolved-count">0</span></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="actions-bar">
+            <button class="btn" onclick="openNewIncidentModal()">
+                <i class="fas fa-plus"></i> New Incident
+            </button>
+            <div class="filters">
+                <select class="filter-select" id="statusFilter" onchange="filterIncidents()">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="contained">Contained</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+                <select class="filter-select" id="severityFilter" onchange="filterIncidents()">
+                    <option value="">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <button class="btn secondary" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export All
+                </button>
+            </div>
+        </div>
+
+        <div id="incidents-container">
+            <div class="incidents-grid" id="incidents-grid">
+                <!-- Incidents will be populated here -->
+            </div>
+            <div class="no-incidents" id="no-incidents" style="display: none;">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>No Incidents Found</h3>
+                <p>Create your first incident to start managing your IR processes.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Incident Modal -->
+    <div id="newIncidentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus-circle"></i> Create New Incident</h2>
+                <span class="close" onclick="closeModal('newIncidentModal')">&times;</span>
+            </div>
+            <div style="padding: 2rem;">
+                <form id="newIncidentForm">
+                    <div class="form-group">
+                        <label class="form-label">Incident Type</label>
+                        <select class="form-select" id="incidentType" required>
+                            <option value="">Select incident type...</option>
+                            <option value="malware">Malware Infection</option>
+                            <option value="data-breach">Data Breach</option>
+                            <option value="phishing">Phishing Attack</option>
+                            <option value="ddos">DDoS Attack</option>
+                            <option value="insider-threat">Insider Threat</option>
+                            <option value="ransomware">Ransomware</option>
+                            <option value="unauthorized-access">Unauthorized Access</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Severity Level</label>
+                        <select class="form-select" id="severity" required>
+                            <option value="">Select severity...</option>
+                            <option value="critical">Critical - System down, data compromised</option>
+                            <option value="high">High - Significant impact, immediate action needed</option>
+                            <option value="medium">Medium - Moderate impact, action required</option>
+                            <option value="low">Low - Minor impact, can be addressed later</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Initial Description</label>
+                        <textarea class="form-textarea" id="description" 
+                                placeholder="Describe what happened, when it was discovered, and initial symptoms..."
+                                required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assigned Analyst</label>
+                        <input type="text" class="form-input" id="analyst" 
+                               placeholder="Enter analyst name or email..." required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn" style="width: 100%;">
+                            <i class="fas fa-rocket"></i> Create Incident & Start Response
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incident Detail Modal -->
+    <div id="incidentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Incident Details</h2>
+                <span class="close" onclick="closeModal('incidentModal')">&times;</span>
+            </div>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('details')">Details</button>
+                <button class="tab" onclick="switchTab('playbook')">Playbook</button>
+                <button class="tab" onclick="switchTab('timeline')">Timeline</button>
+                <button class="tab" onclick="switchTab('evidence')">Evidence</button>
+                <button class="tab" onclick="switchTab('report')">Report</button>
+            </div>
+            <div id="details-tab" class="tab-content active">
+                <div id="incident-details-content">
+                    <!-- Details content will be populated here -->
+                </div>
+            </div>
+            <div id="playbook-tab" class="tab-content">
+                <div class="timer">
+                    <i class="fas fa-clock"></i>
+                    <span>Incident Duration: <span id="incident-timer" class="timer-display">00:00:00</span></span>
+                    <span id="sla-status"></span>
+                </div>
+                <div id="playbook-content">
+                    <!-- Playbook content will be populated here -->
+                </div>
+            </div>
+            <div id="timeline-tab" class="tab-content">
+                <div id="timeline-content">
+                    <!-- Timeline content will be populated here -->
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Add Timeline Entry</label>
+                    <textarea class="form-textarea" id="new-timeline-entry" 
+                              placeholder="Describe the action taken or event that occurred..."></textarea>
+                    <button class="btn" onclick="addTimelineEntry()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-plus"></i> Add Entry
+                    </button>
+                </div>
+            </div>
+            <div id="evidence-tab" class="tab-content">
+                <div id="evidence-content">
+                    <!-- Evidence content will be populated here -->
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Add Evidence</label>
+                    <input type="text" class="form-input" id="evidence-name" 
+                           placeholder="Evidence name (e.g., screenshot.png, memory_dump.raw)">
+                    <textarea class="form-textarea" id="evidence-description" 
+                              placeholder="Description of the evidence and its relevance..." style="margin-top: 0.5rem;"></textarea>
+                    <button class="btn" onclick="addEvidence()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-plus"></i> Add Evidence
+                    </button>
+                </div>
+            </div>
+            <div id="report-tab" class="tab-content">
+                <div class="export-section">
+                    <h3>Incident Report</h3>
+                    <p>Generate comprehensive incident documentation for stakeholders.</p>
+                    <div class="export-buttons">
+                        <button class="btn" onclick="generateReport()">
+                            <i class="fas fa-file-alt"></i> Generate Full Report
+                        </button>
+                        <button class="btn secondary" onclick="exportIncidentJSON()">
+                            <i class="fas fa-code"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+                <div id="generated-report" style="margin-top: 2rem;">
+                    <!-- Generated report will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let incidents = JSON.parse(localStorage.getItem('ir_incidents')) || [];
+        let currentIncident = null;
+        let timers = {};
+
+        // Predefined playbooks for different incident types
+        const playbooks = {
+            'malware': [
+                { title: 'Immediate Containment', description: 'Isolate affected systems from the network to prevent lateral movement. Disconnect network cables or disable network adapters.', estimated: 15 },
+                { title: 'Evidence Preservation', description: 'Create forensic images of affected systems. Document system state, running processes, and network connections.', estimated: 60 },
+                { title: 'Threat Assessment', description: 'Analyze the malware sample, identify indicators of compromise (IOCs), and assess potential impact.', estimated: 120 },
+                { title: 'Scope Determination', description: 'Hunt for IOCs across the environment to determine full scope of infection.', estimated: 180 },
+                { title: 'Eradication', description: 'Remove malware from all affected systems. Update antivirus signatures and apply security patches.', estimated: 240 },
+                { title: 'Recovery', description: 'Restore systems from clean backups or rebuild compromised systems. Implement additional monitoring.', estimated: 480 },
+                { title: 'Post-Incident Review', description: 'Document lessons learned, update procedures, and implement preventive measures.', estimated: 60 }
+            ],
+            'data-breach': [
+                { title: 'Breach Confirmation', description: 'Verify the breach occurred and determine the type of data potentially compromised.', estimated: 30 },
+                { title: 'Containment', description: 'Secure the breach vector and prevent further unauthorized access to sensitive data.', estimated: 60 },
+                { title: 'Assessment', description: 'Determine what data was accessed, by whom, and the potential impact on individuals and organization.', estimated: 120 },
+                { title: 'Legal Notification', description: 'Notify legal counsel and determine regulatory notification requirements (GDPR, CCPA, etc.).', estimated: 60 },
+                { title: 'Evidence Collection', description: 'Collect and preserve evidence including logs, system images, and documentation.', estimated: 180 },
+                { title: 'Stakeholder Notification', description: 'Notify affected individuals, customers, partners, and regulators as required.', estimated: 240 },
+                { title: 'Recovery Actions', description: 'Implement remediation measures and enhanced security controls to prevent recurrence.', estimated: 480 }
+            ],
+            'phishing': [
+                { title: 'Email Analysis', description: 'Analyze the phishing email for IOCs, sender details, and malicious links or attachments.', estimated: 30 },
+                { title: 'Scope Assessment', description: 'Determine how many users received the phishing email and who may have interacted with it.', estimated: 45 },
+                { title: 'User Verification', description: 'Contact affected users to determine if they clicked links or provided credentials.', estimated: 60 },
+                { title: 'Credential Reset', description: 'Reset passwords for users who may have compromised their credentials.', estimated: 90 },
+                { title: 'Email Blocking', description: 'Block the sender and add IOCs to email security filters and threat intelligence feeds.', estimated: 30 },
+                { title: 'User Education', description: 'Send security awareness communication to all users about the phishing campaign.', estimated: 60 },
+                { title: 'Monitoring', description: 'Monitor for additional phishing attempts and unusual account activity.', estimated: 240 }
+            ],
+            'ransomware': [
+                { title: 'Immediate Isolation', description: 'Immediately isolate affected systems from the network to prevent ransomware spread.', estimated: 10 },
+                { title: 'Backup Verification', description: 'Verify integrity of backups and ensure they are not connected to compromised networks.', estimated: 30 },
+                { title: 'Scope Assessment', description: 'Determine the full scope of ransomware infection across the environment.', estimated: 120 },
+                { title: 'Law Enforcement', description: 'Consider contacting law enforcement and do NOT pay ransom without legal consultation.', estimated: 60 },
+                { title: 'Recovery Planning', description: 'Develop recovery plan prioritizing critical systems and services.', estimated: 180 },
+                { title: 'System Recovery', description: 'Restore systems from clean backups or rebuild affected infrastructure.', estimated: 720 },
+                { title: 'Security Hardening', description: 'Implement enhanced security measures to prevent future ransomware attacks.', estimated: 240 }
+            ],
+            'ddos': [
+                { title: 'Attack Verification', description: 'Confirm DDoS attack and identify targeted services and infrastructure.', estimated: 15 },
+                { title: 'Traffic Analysis', description: 'Analyze attack traffic patterns, source IPs, and attack vectors being used.', estimated: 30 },
+                { title: 'Mitigation Activation', description: 'Activate DDoS mitigation services, rate limiting, and traffic filtering.', estimated: 45 },
+                { title: 'ISP Coordination', description: 'Contact ISP and DDoS protection providers for upstream mitigation.', estimated: 60 },
+                { title: 'Service Monitoring', description: 'Monitor service availability and performance during attack mitigation.', estimated: 180 },
+                { title: 'Attack Documentation', description: 'Document attack characteristics for threat intelligence and future defense.', estimated: 60 },
+                { title: 'Post-Attack Analysis', description: 'Analyze effectiveness of defenses and implement improvements.', estimated: 120 }
+            ]
+        };
+
+        // SLA times in minutes based on severity
+        const slaLimits = {
+            'critical': 240,  // 4 hours
+            'high': 480,      // 8 hours
+            'medium': 1440,   // 24 hours
+            'low': 2880       // 48 hours
+        };
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncidents();
+            updateStats();
+            startTimers();
+            
+            // Form submission handler
+            document.getElementById('newIncidentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createIncident();
+            });
+        });
+
+        function generateIncidentId() {
+            return 'IR-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
+        }
+
+        function createIncident() {
+            const type = document.getElementById('incidentType').value;
+            const severity = document.getElementById('severity').value;
+            const description = document.getElementById('description').value;
+            const analyst = document.getElementById('analyst').value;
+
+            const incident = {
+                id: generateIncidentId(),
+                type: type,
+                severity: severity,
+                description: description,
+                analyst: analyst,
+                status: 'open',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                timeline: [{
+                    timestamp: new Date().toISOString(),
+                    entry: `Incident created by ${analyst}. Initial description: ${description}`
+                }],
+                evidence: [],
+                playbook: JSON.parse(JSON.stringify(playbooks[type] || [])).map(step => ({
+                    ...step,
+                    completed: false,
+                    completedAt: null
+                })),
+                progress: 0
+            };
+
+            incidents.unshift(incident);
+            localStorage.setItem('ir_incidents', JSON.stringify(incidents));
+            
+            loadIncidents();
+            updateStats();
+            closeModal('newIncidentModal');
+            
+            // Clear form
+            document.getElementById('newIncidentForm').reset();
+            
+            // Show success notification
+            showNotification('Incident created successfully!', 'success');
+        }
+
+        function loadIncidents() {
+            const grid = document.getElementById('incidents-grid');
+            const noIncidents = document.getElementById('no-incidents');
+            
+            if (incidents.length === 0) {
+                grid.style.display = 'none';
+                noIncidents.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noIncidents.style.display = 'none';
+            
+            grid.innerHTML = incidents.map(incident => createIncidentCard(incident)).join('');
+        }
+
+        function createIncidentCard(incident) {
+            const createdDate = new Date(incident.createdAt);
+            const timeAgo = getTimeAgo(createdDate);
+            const progress = incident.progress || 0;
+            const slaStatus = getSLAStatus(incident);
+            
+            return `
+                <div class="incident-card" onclick="openIncidentModal('${incident.id}')">
+                    <div class="incident-header">
+                        <div class="incident-id">${incident.id}</div>
+                        <div class="severity-badge severity-${incident.severity}">
+                            ${incident.severity}
+                        </div>
+                    </div>
+                    <div class="incident-type">${getTypeDisplayName(incident.type)}</div>
+                    <div class="incident-description">${incident.description.substring(0, 120)}${incident.description.length > 120 ? '...' : ''}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="incident-footer">
+                        <div>
+                            <i class="fas fa-user"></i> ${incident.analyst}
+                        </div>
+                        <div class="${slaStatus.class}">
+                            <i class="fas fa-clock"></i> ${timeAgo}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTypeDisplayName(type) {
+            const typeNames = {
+                'malware': 'Malware Infection',
+                'data-breach': 'Data Breach',
+                'phishing': 'Phishing Attack',
+                'ddos': 'DDoS Attack',
+                'insider-threat': 'Insider Threat',
+                'ransomware': 'Ransomware',
+                'unauthorized-access': 'Unauthorized Access',
+                'other': 'Other'
+            };
+            return typeNames[type] || type;
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            return `${diffDays}d ago`;
+        }
+
+        function getSLAStatus(incident) {
+            if (incident.status === 'resolved') return { class: 'success', text: 'Resolved' };
+            
+            const createdDate = new Date(incident.createdAt);
+            const now = new Date();
+            const elapsedMins = Math.floor((now - createdDate) / 60000);
+            const slaLimit = slaLimits[incident.severity];
+            
+            if (elapsedMins > slaLimit) {
+                return { class: 'critical', text: 'SLA Breached' };
+            } else if (elapsedMins > slaLimit * 0.8) {
+                return { class: 'warning', text: 'SLA Warning' };
+            } else {
+                return { class: '', text: 'On Track' };
+            }
+        }
+
+        function openIncidentModal(incidentId) {
+            currentIncident = incidents.find(i => i.id === incidentId);
+            if (!currentIncident) return;
+            
+            document.getElementById('modalTitle').innerHTML = 
+                `<i class="fas fa-exclamation-triangle"></i> ${currentIncident.id}`;
+            
+            loadIncidentDetails();
+            loadPlaybook();
+            loadTimeline();
+            loadEvidence();
+            
+            document.getElementById('incidentModal').style.display = 'block';
+            startIncidentTimer();
+        }
+
+        function loadIncidentDetails() {
+            const content = document.getElementById('incident-details-content');
+            const slaStatus = getSLAStatus(currentIncident);
+            
+            content.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="incident-status" onchange="updateIncidentStatus()">
+                        <option value="open" ${currentIncident.status === 'open' ? 'selected' : ''}>Open</option>
+                        <option value="in-progress" ${currentIncident.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="contained" ${currentIncident.status === 'contained' ? 'selected' : ''}>Contained</option>
+                        <option value="resolved" ${currentIncident.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <input type="text" class="form-input" value="${getTypeDisplayName(currentIncident.type)}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Severity</label>
+                    <input type="text" class="form-input" value="${currentIncident.severity.toUpperCase()}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assigned Analyst</label>
+                    <input type="text" class="form-input" value="${currentIncident.analyst}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Created</label>
+                    <input type="text" class="form-input" value="${new Date(currentIncident.createdAt).toLocaleString()}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">SLA Status</label>
+                    <input type="text" class="form-input ${slaStatus.class}" value="${slaStatus.text}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" readonly>${currentIncident.description}</textarea>
+                </div>
+            `;
+        }
+
+        function loadPlaybook() {
+            const content = document.getElementById('playbook-content');
+            if (!currentIncident.playbook || currentIncident.playbook.length === 0) {
+                content.innerHTML = '<p>No playbook available for this incident type.</p>';
+                return;
+            }
+            
+            const completedSteps = currentIncident.playbook.filter(step => step.completed).length;
+            const progress = Math.round((completedSteps / currentIncident.playbook.length) * 100);
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Response Playbook Progress</h3>
+                        <span style="font-size: 1.2rem; font-weight: 600; color: #0078d4;">
+                            ${completedSteps}/${currentIncident.playbook.length} Steps
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                ${currentIncident.playbook.map((step, index) => `
+                    <div class="playbook-step ${step.completed ? 'completed' : ''}">
+                        <div class="step-header" onclick="toggleStep(${index})">
+                            <div class="step-title">
+                                <div class="step-checkbox ${step.completed ? 'checked' : ''}" 
+                                     onclick="event.stopPropagation(); toggleStepCompletion(${index})">
+                                </div>
+                                <span>${step.title}</span>
+                                <span style="color: #808080; font-size: 0.9rem;">
+                                    (~${step.estimated} min)
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="step-content">
+                            <p>${step.description}</p>
+                            ${step.completed ? `<p style="color: #00aa44; font-size: 0.9rem; margin-top: 1rem;">
+                                <i class="fas fa-check"></i> Completed at ${new Date(step.completedAt).toLocaleString()}
+                            </p>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            
+            // Update incident progress
+            currentIncident.progress = progress;
+            updateIncidentInStorage();
+        }
+
+        function toggleStep(index) {
+            const stepContent = document.querySelectorAll('.step-content')[index];
+            stepContent.classList.toggle('show');
+        }
+
+        function toggleStepCompletion(index) {
+            const step = currentIncident.playbook[index];
+            step.completed = !step.completed;
+            
+            if (step.completed) {
+                step.completedAt = new Date().toISOString();
+                addTimelineEntry(`Completed playbook step: ${step.title}`);
+                
+                // Update status to in-progress if this is the first completed step
+                if (currentIncident.status === 'open') {
+                    currentIncident.status = 'in-progress';
+                }
+            } else {
+                step.completedAt = null;
+            }
+            
+            updateIncidentInStorage();
+            loadPlaybook();
+            loadIncidents(); // Refresh the main grid
+        }
+
+        function loadTimeline() {
+            const content = document.getElementById('timeline-content');
+            if (!currentIncident.timeline || currentIncident.timeline.length === 0) {
+                content.innerHTML = '<p>No timeline entries yet.</p>';
+                return;
+            }
+            
+            content.innerHTML = currentIncident.timeline
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(entry => `
+                    <div class="timeline-entry">
+                        <div class="timeline-timestamp">
+                            ${new Date(entry.timestamp).toLocaleString()}
+                        </div>
+                        <div>${entry.entry}</div>
+                    </div>
+                `).join('');
+        }
+
+        function loadEvidence() {
+            const content = document.getElementById('evidence-content');
+            if (!currentIncident.evidence || currentIncident.evidence.length === 0) {
+                content.innerHTML = '<p>No evidence collected yet.</p>';
+                return;
+            }
+            
+            content.innerHTML = currentIncident.evidence.map((evidence, index) => `
+                <div class="evidence-item">
+                    <div class="evidence-name">${evidence.name}</div>
+                    <div style="color: #b0b0b0; margin-bottom: 0.5rem;">${evidence.description}</div>
+                    <div style="font-size: 0.8rem; color: #808080;">
+                        Added: ${new Date(evidence.timestamp).toLocaleString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addTimelineEntry(customEntry = null) {
+            const entryText = customEntry || document.getElementById('new-timeline-entry').value.trim();
+            if (!entryText) return;
+            
+            const entry = {
+                timestamp: new Date().toISOString(),
+                entry: entryText
+            };
+            
+            currentIncident.timeline.push(entry);
+            currentIncident.updatedAt = new Date().toISOString();
+            
+            updateIncidentInStorage();
+            loadTimeline();
+            
+            if (!customEntry) {
+                document.getElementById('new-timeline-entry').value = '';
+            }
+        }
+
+        function addEvidence() {
+            const name = document.getElementById('evidence-name').value.trim();
+            const description = document.getElementById('evidence-description').value.trim();
+            
+            if (!name) {
+                showNotification('Please provide evidence name', 'error');
+                return;
+            }
+            
+            const evidence = {
+                name: name,
+                description: description,
+                timestamp: new Date().toISOString()
+            };
+            
+            currentIncident.evidence.push(evidence);
+            currentIncident.updatedAt = new Date().toISOString();
+            
+            updateIncidentInStorage();
+            loadEvidence();
+            addTimelineEntry(`Evidence collected: ${name}`);
+            
+            // Clear form
+            document.getElementById('evidence-name').value = '';
+            document.getElementById('evidence-description').value = '';
+        }
+
+        function updateIncidentStatus() {
+            const newStatus = document.getElementById('incident-status').value;
+            const oldStatus = currentIncident.status;
+            
+            currentIncident.status = newStatus;
+            currentIncident.updatedAt = new Date().toISOString();
+            
+            addTimelineEntry(`Status changed from ${oldStatus} to ${newStatus}`);
+            
+            if (newStatus === 'resolved') {
+                currentIncident.resolvedAt = new Date().toISOString();
+            }
+            
+            updateIncidentInStorage();
+            loadIncidents();
+        }
+
+        function updateIncidentInStorage() {
+            const index = incidents.findIndex(i => i.id === currentIncident.id);
+            if (index !== -1) {
+                incidents[index] = currentIncident;
+                localStorage.setItem('ir_incidents', JSON.stringify(incidents));
+                updateStats();
+            }
+        }
+
+        function startIncidentTimer() {
+            const timerDisplay = document.getElementById('incident-timer');
+            const slaStatus = document.getElementById('sla-status');
+            
+            function updateTimer() {
+                const startTime = new Date(currentIncident.createdAt);
+                const now = new Date();
+                const elapsed = now - startTime;
+                
+                const hours = Math.floor(elapsed / (1000 * 60 * 60));
+                const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+                
+                timerDisplay.textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                // Update SLA status
+                const slaMinutes = Math.floor(elapsed / (1000 * 60));
+                const slaLimit = slaLimits[currentIncident.severity];
+                
+                if (currentIncident.status === 'resolved') {
+                    slaStatus.innerHTML = '<span class="success">Incident Resolved</span>';
+                } else if (slaMinutes > slaLimit) {
+                    slaStatus.innerHTML = '<span class="sla-critical">SLA BREACHED</span>';
+                    slaStatus.classList.add('pulse');
+                } else if (slaMinutes > slaLimit * 0.8) {
+                    slaStatus.innerHTML = '<span class="sla-warning">SLA Warning</span>';
+                } else {
+                    slaStatus.innerHTML = '<span class="success">Within SLA</span>';
+                }
+            }
+            
+            updateTimer();
+            timers[currentIncident.id] = setInterval(updateTimer, 1000);
+        }
+
+        function startTimers() {
+            // Start timers for active incidents
+            incidents.filter(i => i.status !== 'resolved').forEach(incident => {
+                // Timer logic for dashboard cards would go here
+            });
+        }
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            
+            // Add active class to selected tab and show content
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+        }
+
+        function updateStats() {
+            const criticalCount = incidents.filter(i => i.severity === 'critical' && i.status !== 'resolved').length;
+            const activeCount = incidents.filter(i => i.status !== 'resolved').length;
+            
+            const today = new Date().toDateString();
+            const resolvedToday = incidents.filter(i => 
+                i.status === 'resolved' && 
+                i.resolvedAt && 
+                new Date(i.resolvedAt).toDateString() === today
+            ).length;
+            
+            document.getElementById('critical-count').textContent = criticalCount;
+            document.getElementById('active-count').textContent = activeCount;
+            document.getElementById('resolved-count').textContent = resolvedToday;
+        }
+
+        function filterIncidents() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const severityFilter = document.getElementById('severityFilter').value;
+            
+            const filtered = incidents.filter(incident => {
+                const statusMatch = !statusFilter || incident.status === statusFilter;
+                const severityMatch = !severityFilter || incident.severity === severityFilter;
+                return statusMatch && severityMatch;
+            });
+            
+            const grid = document.getElementById('incidents-grid');
+            const noIncidents = document.getElementById('no-incidents');
+            
+            if (filtered.length === 0) {
+                grid.style.display = 'none';
+                noIncidents.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noIncidents.style.display = 'none';
+            grid.innerHTML = filtered.map(incident => createIncidentCard(incident)).join('');
+        }
+
+        function generateReport() {
+            if (!currentIncident) return;
+            
+            const report = `
+                <div style="background: #1a1a1a; padding: 2rem; border-radius: 8px; border: 1px solid #404040;">
+                    <h2>Incident Response Report</h2>
+                    <div style="margin: 2rem 0; padding: 1rem; background: #2d2d30; border-radius: 6px;">
+                        <h3>Incident Summary</h3>
+                        <p><strong>Incident ID:</strong> ${currentIncident.id}</p>
+                        <p><strong>Type:</strong> ${getTypeDisplayName(currentIncident.type)}</p>
+                        <p><strong>Severity:</strong> ${currentIncident.severity.toUpperCase()}</p>
+                        <p><strong>Status:</strong> ${currentIncident.status.toUpperCase()}</p>
+                        <p><strong>Analyst:</strong> ${currentIncident.analyst}</p>
+                        <p><strong>Created:</strong> ${new Date(currentIncident.createdAt).toLocaleString()}</p>
+                        ${currentIncident.resolvedAt ? `<p><strong>Resolved:</strong> ${new Date(currentIncident.resolvedAt).toLocaleString()}</p>` : ''}
+                    </div>
+                    
+                    <div style="margin: 2rem 0; padding: 1rem; background: #2d2d30; border-radius: 6px;">
+                        <h3>Description</h3>
+                        <p>${currentIncident.description}</p>
+                    </div>
+                    
+                    <div style="margin: 2rem 0; padding: 1rem; background: #2d2d30; border-radius: 6px;">
+                        <h3>Response Actions</h3>
+                        ${currentIncident.playbook.filter(step => step.completed).map(step => 
+                            `<p>✅ <strong>${step.title}</strong> - Completed ${new Date(step.completedAt).toLocaleString()}</p>`
+                        ).join('')}
+                    </div>
+                    
+                    <div style="margin: 2rem 0; padding: 1rem; background: #2d2d30; border-radius: 6px;">
+                        <h3>Evidence Collected</h3>
+                        ${currentIncident.evidence.map(evidence => 
+                            `<p>📁 <strong>${evidence.name}</strong> - ${evidence.description}</p>`
+                        ).join('') || '<p>No evidence collected.</p>'}
+                    </div>
+                    
+                    <div style="margin: 2rem 0; padding: 1rem; background: #2d2d30; border-radius: 6px;">
+                        <h3>Timeline</h3>
+                        ${currentIncident.timeline.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                            .map(entry => `<p>🕒 ${new Date(entry.timestamp).toLocaleString()} - ${entry.entry}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('generated-report').innerHTML = report;
+        }
+
+        function exportIncidentJSON() {
+            if (!currentIncident) return;
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentIncident, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `${currentIncident.id}_incident_report.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(incidents, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `ir_incidents_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function openNewIncidentModal() {
+            document.getElementById('newIncidentModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // Clear any running timers
+            if (currentIncident && timers[currentIncident.id]) {
+                clearInterval(timers[currentIncident.id]);
+                delete timers[currentIncident.id];
+            }
+            
+            currentIncident = null;
+        }
+
+        function showNotification(message, type) {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#00aa44' : '#ff4444'};
+                color: white;
+                border-radius: 6px;
+                font-weight: 500;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        };
+    </script>
+</body>
+</html>
